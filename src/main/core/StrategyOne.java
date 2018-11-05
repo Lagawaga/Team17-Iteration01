@@ -1,6 +1,7 @@
 package core;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class StrategyOne implements IStrategy {
 
@@ -57,42 +58,42 @@ public class StrategyOne implements IStrategy {
 	
 	public ArrayList<Set> checkSet(ArrayList<Tile> hand){
 		ArrayList<Set> sets = new ArrayList<Set>();
-		ArrayList<Tile> hold = new ArrayList<Tile>();
-
-		
-		for(int i=1; i<=4; i++){
-			for(int t=0; t<colourSplitter(hand, i).size(); t++) {
-				
-				int counter = 1;
-				hold.add(colourSplitter(hand, i).get(t));
-				
-				for(int j=1; j<=4; j++) {
-					if(j==i){
-						
-						for(Tile x: colourSplitter(hand, j)) {
-							if(x.getValue() == colourSplitter(hand, i).get(t).getValue()) {
-								counter++;
-								hold.add(x);
-								break;
-							}
-						}
+		HashSet<Integer> values = new HashSet<Integer>();
+		ArrayList<ArrayList<Tile>> hold2 = new ArrayList<ArrayList<Tile>>();
+		for(Tile t : hand){
+			values.add(t.getValue());
+		}
+		for(Integer i : values) {
+			ArrayList<Tile> hold = new ArrayList<Tile>();
+			for(Tile t : hand) {
+				if(t.getValue() == i) {
+					hold.add(t);
+				}
+			}
+			hold2.add(hold);
+		}
+		for(ArrayList<Tile> o : hold2) {
+			ArrayList<Tile> setHold = new ArrayList<Tile>();
+			ArrayList<Integer> colours = new ArrayList<Integer>();
+			if(o.size() >= 3) {
+				for(Tile t: o) {
+					if(!colours.contains(t.getColour())){
+						colours.add(t.getColour());
+						setHold.add(t);
 					}
-					if(counter <3){
-						hold.clear();
-					}else {
-						sets.add(new Set(hold));
-						hold.clear();
-						counter = 1;
-					}
+				}
+				if(setHold.size() >= 3) {
+					sets.add(new Set(setHold));
 				}
 
 			}
+			
 		}
-		
+
 		return sets;
-		
-		
 	}
+	
+	
 	public ArrayList<Tile> colourSplitter(ArrayList<Tile> hand, int i) {
 		
 		ArrayList<Tile> colour = new ArrayList<Tile>();
@@ -108,11 +109,25 @@ public class StrategyOne implements IStrategy {
 
 	public ArrayList<Meld> checkHandPlays(ArrayList<Tile> hand){
 		ArrayList<Meld> possiblePlays = new ArrayList<Meld>();
-
+		ArrayList<Tile> handHold = new ArrayList<Tile>();
+		handHold.addAll(hand);
+		
 		ArrayList<Run> possibleRuns = checkRun(hand);
 		for(Run r : possibleRuns) {
 			possiblePlays.add(r);
 		}
+		for (Run r:possibleRuns ) {
+			for(Tile t:r.getTiles()) {
+				handHold.remove(t);
+			}
+		}
+		
+		ArrayList<Set> possibleSets = checkSet(handHold);
+	
+		for(Set r : possibleSets) {
+			possiblePlays.add(r);
+		}
+
 		return possiblePlays;         
 		
 	}

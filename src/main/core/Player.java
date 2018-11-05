@@ -1,6 +1,9 @@
 package core;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Player implements Observer{
@@ -12,7 +15,7 @@ public class Player implements Observer{
 	//These are observed from Table
 	public Table tableSnapshot;
 	//private	ArrayList<Meld> Melds;
-	private boolean gameOver = false;
+	protected boolean gameOver = false;
 	
 	//CONSTRUCTORS
 	public Player() {
@@ -27,6 +30,7 @@ public class Player implements Observer{
 		for(int i = 0; i<14; i++) {
 			drawTile(this.tableSnapshot.getPile());
 		}
+		sortHand();
 		System.out.println("Your Hand:");
 		printTiles(this.hand);
 		System.out.println("\n");
@@ -76,6 +80,27 @@ public class Player implements Observer{
 		insertionSort(green);
 		insertionSort(orange);
 		
+		Collections.sort(blue, new Comparator<Tile>() {
+			public int compare(Tile s2, Tile s1) {
+				return Integer.compare(s2.getValue(), s1.getValue());
+			}
+		});
+		Collections.sort(red, new Comparator<Tile>() {
+			public int compare(Tile s2, Tile s1) {
+				return Integer.compare(s2.getValue(), s1.getValue());
+			}
+		});
+		Collections.sort(green, new Comparator<Tile>() {
+			public int compare(Tile s2, Tile s1) {
+				return Integer.compare(s2.getValue(), s1.getValue());
+			}
+		});
+		Collections.sort(orange, new Comparator<Tile>() {
+			public int compare(Tile s2, Tile s1) {
+				return Integer.compare(s2.getValue(), s1.getValue());
+			}
+		});
+		
 		finished.addAll(blue);
 		finished.addAll(red);
 		finished.addAll(green);
@@ -102,7 +127,7 @@ public class Player implements Observer{
 	}
 
 	public void playMeld(Meld m) {
-		
+		printNew(m);
 		this.tableSnapshot.getMelds().add(m);
 	
 		if(this.status == false) {
@@ -113,6 +138,7 @@ public class Player implements Observer{
 			}
 			
 			this.pointCounter += meldPoints;
+			
 			if(pointCounter >= 30) {
 				this.status = true;
 			}
@@ -254,19 +280,27 @@ public class Player implements Observer{
 		System.out.println("USER TURN");
 		System.out.println("1.Play tiles.");
 		System.out.println("2.Draw tile & end turn.");
-		int n = input.nextInt();
-		switch(n) {
-			case 1: 
-				playOptions();
-				break;
-			case 2:
-				endTurn();
-				break;
-			default:
-				System.out.println("Invalid choice.");
-				doTurn();
-				break;
+		
+		try {
+			int n = input.nextInt();
+			
+			switch(n) {
+				case 1: 
+					playOptions();
+					break;
+				case 2:
+					endTurn();
+					break;
+				default:
+					System.out.println("Invalid choice.");
+					doTurn();
+					break;
+			}
+		}catch(InputMismatchException e) {
+			System.out.println("INVALID");
+			
 		}
+		
 	}
 	private void playOptions() {
 		printTiles(hand);
@@ -299,21 +333,9 @@ public class Player implements Observer{
 				break;
 		}
 	}
-//	
-//	public void modifyMeld() {
-//		Meld meld = selectMeld();
-//		int tileNum;
-//		System.out.println("Select tiles:");
-//		printTiles(meld.getTiles());
-//		tileNum = input.nextInt();
-//
-//		
-//	}
 	
-
 	public ArrayList<Tile> fromMeldAndHand(){
 		 ArrayList<Tile> tiles = new ArrayList<Tile>();
-		 
 		 
 		 while(true) {
 			 System.out.println("1.Choose tiles from Hand");
@@ -327,9 +349,7 @@ public class Player implements Observer{
 				 System.out.println("Select tile from hand:");
 				 printTiles(this.hand);
 				 int choice = input.nextInt();
-				 
-				 
-				 
+				 	 
 			 }
 			 
 			 if(n == 2) {
@@ -353,7 +373,6 @@ public class Player implements Observer{
 		 
 		
 	}
-	
 
 	public void createMeld() {
 		
@@ -429,20 +448,27 @@ public class Player implements Observer{
 			System.out.println("2.Use tile(s) form a meld");
 			System.out.println("3.Back");
 			
-			int n = input.nextInt();
-			switch(n) {
-			case 1:
-				addToMeld(fromHand());
-				break;
-			case 2:
-				fromMeld();
-			case 3:
+			try {
+				int n = input.nextInt();
+				switch(n) {
+				case 1:
+					addToMeld(fromHand());
+					break;
+				case 2:
+					fromMeld();
+				case 3:
+					doTurn();
+					break;
+				default:
+					System.out.println("Invalid choice");
+					break;
+				}
+			}catch(Exception e) {
+				System.out.println("Please enter a valid number");
 				doTurn();
-				break;
-			default:
-				System.out.println("Invalid choice");
-				break;
+				
 			}
+			
 		}
 	}
 	
@@ -516,20 +542,45 @@ public class Player implements Observer{
 		System.out.println(printVal);
 	}
 	
+	public void printNew(Meld newMeld) {
+		String printVal = "";
+		for(Meld m : this.tableSnapshot.getMelds()) {
+			printVal += "{ ";
+			ArrayList<Tile> tmp = m.getTiles();
+			for (Tile t : tmp) {
+				printVal +=  "[" + t.toString() + "] ";
+			}
+			printVal += "}\n";
+        }
+		
+			printVal += "*{ ";
+			ArrayList<Tile> tiles = newMeld.getTiles();
+			for (Tile t : tiles) {
+				printVal +=  "[" + t.toString() + "] ";
+			}
+			printVal += "} \n";
+		
+		
+        System.out.println(printVal);
+	}
+	
 	//OBSERVER METHODS
 	public void update(Table table) {
 		//this.Melds = (ArrayList<Meld>) table.getMelds().clone();
 		this.tableSnapshot.setMelds((ArrayList<Meld>) table.getMelds().clone());
 		this.tableSnapshot.setPile( table.getPile());
+		this.tableSnapshot.status = table.status;
+		this.tableSnapshot.setObservers(table.getObservers());
 	}
 	public void pushToTable(Table table) {
 		if (this.hand.isEmpty()) {
 			this.gameOver = true;
+			System.out.println("Player Wins!\n");
 		}
-		if(table.getMelds().containsAll(this.tableSnapshot.getMelds()) && this.tableSnapshot.getMelds().containsAll(table.getMelds())) {
+		if(!this.gameOver && table.getMelds().containsAll(this.tableSnapshot.getMelds()) && this.tableSnapshot.getMelds().containsAll(table.getMelds())) {
 			System.out.println("No actions performed. Drawing Tile...");
 			if(this.tableSnapshot.getPile().getPile().isEmpty()) {
-				System.out.println("Can't draw tile. Pile is empty.");
+				System.out.println("Can't draw tile. Pile is empty.\n");
 			}
 			else {
 			drawTile(table.getPile());
@@ -538,6 +589,7 @@ public class Player implements Observer{
 			System.out.println("\n");
 			}
 		}
+		
 		table.updateTable(this.tableSnapshot.getMelds(), this.gameOver, this.status, this.tableSnapshot.getPile());
 	}
 	
@@ -554,5 +606,11 @@ public class Player implements Observer{
 	public int getSize() {
 		return this.hand.size();
 	}
-
+	//SETTERS
+	public void setStatus(boolean b) {
+		this.status = b;
+	}
+	public void setGameOver(boolean b) {
+		this.gameOver = b;
+	}
 }

@@ -5,8 +5,8 @@ public class Tile {
 	private int value;
 	private int colour;
 	//LEGEND:
-	//B = 1,
-	//R = 2,
+	//R = 1,
+	//B = 2,
 	//G = 3,
 	//O = 4
 
@@ -26,11 +26,11 @@ public class Tile {
 		int colour = this.colour;
 		switch(colour) {
 			case 1:
-				printVal += "B";
+				printVal += "R";
 				printVal += Integer.toString(this.value);
 				break;
 			case 2: 
-				printVal += "R";
+				printVal += "B";
 				printVal += Integer.toString(this.value);
 				break;
 			case 3:
@@ -46,5 +46,13 @@ public class Tile {
 				break;
 		}
 		return printVal;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		Tile t = (Tile) obj;
+		if (this.value == t.value && this.colour == t.colour) {
+			return true;
+		}
+		else return false;
 	}
 }

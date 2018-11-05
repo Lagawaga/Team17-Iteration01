@@ -27,31 +27,8 @@ public class Rummikub {
 		
 		table.notifyObservers();
 		
-		ArrayList<Tile> tiles = new ArrayList<Tile>();
-		tiles.add(new Tile(1,10));
-		tiles.add(new Tile(2,10));
-		tiles.add(new Tile(3,10));
-		
-		ArrayList<Tile> tiles2 = new ArrayList<Tile>();
-		tiles2.add(new Tile(1,3));
-		tiles2.add(new Tile(2,3));
-		tiles2.add(new Tile(3,3));
-		tiles2.add(new Tile(4,3));
-		
-		ArrayList<Tile> tiles3 = new ArrayList<Tile>();
-		tiles3.add(new Tile(1,8));
-		tiles3.add(new Tile(1,9));
-		tiles3.add(new Tile(1,10));
-		
-		Set run = new Set(tiles);
-		Set run2 = new Set(tiles2);
-		Run set = new Run(tiles3);
-		
-		//player.playMeld(run);
-		//player.playMeld(run2);
-		//player.playMeld(set);
-		
 		player.drawHand();
+		player.sortHand();
 		bot1.drawHand();
 		bot1.sortHand();
 		bot2.drawHand();
@@ -61,11 +38,7 @@ public class Rummikub {
 		
 		
 		while(table.getGameOver() == false) {
-			
-			player.addTile(new Tile(1,1));
-			player.addTile(new Tile(1,2));
-			player.addTile(new Tile(1,3));
-			player.sortHand();
+
 			player.doTurn();
 			
 			if(player.endTurn()) {
@@ -74,19 +47,23 @@ public class Rummikub {
 			else {
 				System.out.println("Invalid melds played.\n");
 			}
-	
 			
-			((AI)bot1).doTurn();
-			bot1.pushToTable(table);
+			if(!table.getGameOver()) {
+				((AI)bot1).doTurn();
+				bot1.pushToTable(table);
+			}
 			
-			((AI)bot2).doTurn();
-			bot2.pushToTable(table);
+			if(!table.getGameOver()) {
+				((AI)bot2).doTurn();
+				bot2.pushToTable(table);
+			}
 			
-			((AI)bot3).doTurn();
-			bot3.getHand().clear();
-			bot3.pushToTable(table);
+			if(!table.getGameOver()) {
+				((AI)bot3).doTurn();
+				bot3.pushToTable(table);
+			}
 		}
-		System.out.println("Ganme Over.");
+		System.out.println("Game Over.");
 	}
 		
 	

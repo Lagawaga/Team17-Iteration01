@@ -13,7 +13,7 @@ private boolean gameOver = false;
 public boolean status;
 
 	public Table(){
-		this.observers = new ArrayList<Observer>();
+		this.setObservers(new ArrayList<Observer>());
 		this.Melds = new ArrayList<Meld>();
 		this.pile = new Pile();
 		this.status = false;
@@ -26,11 +26,11 @@ public boolean status;
 	//OBSERVER
 	public void registerObserver(Observer observer) {
 		if(observer!=null) {
-			this.observers.add(observer);
+			this.getObservers().add(observer);
 		}
 	}
 	public void notifyObservers() {
-		Iterator<Observer> i = observers.iterator();
+		Iterator<Observer> i = getObservers().iterator();
 		while(i.hasNext()) {
 			Observer observer = i.next();
 			observer.update(this);
@@ -39,7 +39,7 @@ public boolean status;
 	}
 	public void removeObserver(Observer observer) {
 		if(observer!=null) {
-			this.observers.remove(observer);
+			this.getObservers().remove(observer);
 		}
 		
 	}
@@ -47,8 +47,10 @@ public boolean status;
 		this.gameOver = gameOver;
 		this.Melds = updatedMelds;
 		this.pile = updatedPile;
-		if(status = true)
+
+		if(status == true) {
 			this.status = true;
+		}
 		notifyObservers();
 	}
 	//GETTERS
@@ -67,5 +69,11 @@ public boolean status;
 	}
 	public void setPile(Pile pile) {
 		this.pile = pile;
+	}
+	public List<Observer> getObservers() {
+		return observers;
+	}
+	public void setObservers(List<Observer> observers) {
+		this.observers = observers;
 	}
 }

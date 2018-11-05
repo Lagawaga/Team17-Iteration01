@@ -1,6 +1,7 @@
 package core;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class StrategyTwo implements IStrategy {
 
@@ -18,11 +19,27 @@ public class StrategyTwo implements IStrategy {
 					counter += t.getValue();
 				}
 			}
-			//if value of plays is under 30, return empty plays (draw a tile)
+			//if value of plays is under 30
 			if (counter < 30) {
+				
+			//check if plays would allow player to win
+				ArrayList<Tile> tmp = new ArrayList<Tile>();
+				for (Meld m : plays) {
+					for(Tile t: m.getTiles()) {
+						tmp.add(t);
+					}
+				}
+			
+				if(tmp.containsAll(hand)) {
+					System.out.println("Bot 2 wins the game!");
+					return plays;
+				}
+				//else return empty
+				else {
 				System.out.println("Unable to play. Value of plays less than 30.");
 				plays.clear();
 				return plays;
+				}
 			}
 			//else return plays
 			else {
@@ -43,79 +60,80 @@ public class StrategyTwo implements IStrategy {
 		
 		
 		ArrayList<Run> runs = new ArrayList<Run>();
-		ArrayList<Tile> hold = new ArrayList<Tile>();
 		
+		//work on one colour at a time
 		for(int i=1; i<=4; i++) {
-			
+			//work on colour i
 			ArrayList<Tile> colour = new ArrayList<Tile>();
 			colour.addAll(colourSplitter(hand, i));
-			
-			int counter = 1;
-			
-			for(int t=0; t<colour.size(); t++) {
-			
-				hold.add(hand.get(t));
-			
-				try {
-				if(hand.get(t).getValue()+1 == hand.get(t+1).getValue()){
-					counter++;
-
-				}}catch(Exception IndexOutOfBoundsException) {
-					if(counter <3) {
-						hold.clear();
-						
-					}else {
-						hold.add(hand.get(t));
-						runs.add(new Run(hold));
-						
+			// if array is empty, return empty
+		 
+			ArrayList<Integer> allValues = new ArrayList<Integer>();
+	
+			for (Tile e : colour)
+				allValues.add(e.getValue());
+	
+			for (Tile e : colour) {
+				int next = e.getValue() +1;
+				int twoNext = e.getValue() +2;
+				
+				//if its possible for this value to be part of a run (+1 and +2 exist)
+				if (allValues.contains(next) && allValues.contains(twoNext)) {
+					ArrayList<Tile> hold = new ArrayList<Tile>();
+					hold.add(new Tile(i,e.getValue()));
+					while(allValues.contains(next)) {
+						hold.add(new Tile(i, next));
+						allValues.remove(Integer.valueOf(next));
+						next++;
 					}
-					counter = 1;
+			
+					runs.add(new Run(hold));
+					
 				}
+		 
 			}
 		}
-			
 			return runs;
 		
 	}
 	
 	public ArrayList<Set> checkSet(ArrayList<Tile> hand){
 		ArrayList<Set> sets = new ArrayList<Set>();
-		ArrayList<Tile> hold = new ArrayList<Tile>();
-
-		
-		for(int i=1; i<=4; i++){
-			for(int t=0; t<colourSplitter(hand, i).size(); t++) {
-				
-				int counter = 1;
-				hold.add(colourSplitter(hand, i).get(t));
-				
-				for(int j=1; j<=4; j++) {
-					if(j==i){
-						
-						for(Tile x: colourSplitter(hand, j)) {
-							if(x.getValue() == colourSplitter(hand, i).get(t).getValue()) {
-								counter++;
-								hold.add(x);
-								break;
-							}
-						}
+		HashSet<Integer> values = new HashSet<Integer>();
+		ArrayList<ArrayList<Tile>> hold2 = new ArrayList<ArrayList<Tile>>();
+		for(Tile t : hand){
+			values.add(t.getValue());
+		}
+		for(Integer i : values) {
+			ArrayList<Tile> hold = new ArrayList<Tile>();
+			for(Tile t : hand) {
+				if(t.getValue() == i) {
+					hold.add(t);
+				}
+			}
+			hold2.add(hold);
+		}
+		for(ArrayList<Tile> o : hold2) {
+			ArrayList<Tile> setHold = new ArrayList<Tile>();
+			ArrayList<Integer> colours = new ArrayList<Integer>();
+			if(o.size() >= 3) {
+				for(Tile t: o) {
+					if(!colours.contains(t.getColour())){
+						colours.add(t.getColour());
+						setHold.add(t);
 					}
-					if(counter <3){
-						hold.clear();
-					}else {
-						sets.add(new Set(hold));
-						hold.clear();
-						counter = 1;
-					}
+				}
+				if(setHold.size() >= 3) {
+					sets.add(new Set(setHold));
 				}
 
 			}
+			
 		}
-		
+
 		return sets;
-		
-		
 	}
+	
 	public ArrayList<Tile> colourSplitter(ArrayList<Tile> hand, int i) {
 		
 		ArrayList<Tile> colour = new ArrayList<Tile>();
@@ -131,12 +149,26 @@ public class StrategyTwo implements IStrategy {
 
 	public ArrayList<Meld> checkHandPlays(ArrayList<Tile> hand){
 		ArrayList<Meld> possiblePlays = new ArrayList<Meld>();
-		System.out.println(hand.size());
-		System.out.println("number of possible runs: " + checkRun(hand).size());
-		System.out.println("number of possible sets: " + checkSet(hand).size());
-		possiblePlays.addAll(checkRun(hand));
-		possiblePlays.addAll(checkSet(hand));
-		return possiblePlays;
+		ArrayList<Tile> handHold = new ArrayList<Tile>();
+		handHold.addAll(hand);
+		
+		ArrayList<Run> possibleRuns = checkRun(hand);
+		for(Run r : possibleRuns) {
+			possiblePlays.add(r);
+		}
+		for (Run r:possibleRuns ) {
+			for(Tile t:r.getTiles()) {
+				handHold.remove(t);
+			}
+		}
+	
+		ArrayList<Set> possibleSets = checkSet(handHold);
+	
+		for(Set r : possibleSets) {
+			possiblePlays.add(r);
+		}
+
+		return possiblePlays;         
 		
 	}
 }
